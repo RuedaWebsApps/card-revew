@@ -1,0 +1,12 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+.star-btn:focus-visible, button:focus-visible, a:focus-visible {
+  outline: 2px solid #D60E7B; outline-offset: 2px;
+}
+#qr-code-container canvas { width: 100% !important; height: 100% !important; display: block; }
