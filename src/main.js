@@ -1,5 +1,6 @@
 import './style.css';
 import QRCodeStyling from 'qr-code-styling';
+import html2canvas from 'html2canvas';
 import { REVIEW_URL } from './config.js';
 
 const T = {
@@ -15,6 +16,16 @@ const T = {
     presentLabel: 'Mostrar QR',
     exitPresentLabel: 'Salir',
     toastStarOpening: 'Abriendo Google Reviews...',
+    downloadLabel: 'Descargar PNG',
+    downloadingLabel: 'Generando...',
+    shareLabel: 'Compartir',
+    copyLabel: 'Copiar Link',
+    shareTitle: 'Rese?a en Google ? Rueda La Rola Media',
+    shareText: '?Cu?ntanos tu experiencia con Rueda La Rola Media en Google!',
+    toastCopied: 'Link copiado al portapapeles',
+    toastDownloaded: 'Imagen PNG guardada',
+    toastDownloadError: 'No se pudo generar la imagen. Intenta de nuevo.',
+    whatsappMessage: (url) => `?Hola! ??? Gracias por confiar en *Rueda La Rola Media*. ?Te gust? trabajar con nosotros? Tu rese?a en Google nos ayuda much?simo a seguir girando. ?Solo toma 30 segundos! ?????\n\n?? ${url}`,
   },
   en: {
     headline: 'Loved rolling with us?',
@@ -28,6 +39,16 @@ const T = {
     presentLabel: 'Show QR',
     exitPresentLabel: 'Exit',
     toastStarOpening: 'Opening Google Reviews...',
+    downloadLabel: 'Download PNG',
+    downloadingLabel: 'Exporting...',
+    shareLabel: 'Share',
+    copyLabel: 'Copy Link',
+    shareTitle: 'Google Review ? Rueda La Rola Media',
+    shareText: 'Tell us about your experience with Rueda La Rola Media on Google!',
+    toastCopied: 'Link copied to clipboard',
+    toastDownloaded: 'PNG image saved',
+    toastDownloadError: 'Could not generate the image. Try again.',
+    whatsappMessage: (url) => `Hi! ??? Thanks for trusting *Rueda La Rola Media*. Did you enjoy working with us? Your Google review helps us a lot. It only takes 30 seconds! ?????\n\n?? ${url}`,
   },
 };
 
@@ -65,6 +86,15 @@ const el = {
   footer: $('card-footer'),
   services: $('card-services'),
   website: $('card-website-link'),
+  actionToolbar: $('action-toolbar'),
+  btnWhatsapp: $('btn-whatsapp'),
+  btnDownload: $('btn-download-png'),
+  downloadLabel: $('download-label'),
+  btnShare: $('btn-share'),
+  shareLabel: $('share-label'),
+  btnCopy: $('btn-copy-link'),
+  copyLabel: $('copy-label'),
+  secBtns: document.querySelectorAll('.action-secondary-btn'),
   toast: $('toast-container'),
   toastMsg: $('toast-message'),
 };
@@ -127,12 +157,20 @@ function updateLanguage() {
   el.themeLabel.textContent = state.theme === 'light' ? t.themeToDark : t.themeToLight;
   el.presentLabel.textContent = t.presentLabel;
   el.exitLabel.textContent = t.exitPresentLabel;
+  el.downloadLabel.textContent = t.downloadLabel;
+  el.shareLabel.textContent = t.shareLabel;
+  el.copyLabel.textContent = t.copyLabel;
 }
 
 const PILL_LIGHT =
   'inline-flex items-center gap-1.5 rounded-full border border-purple-200/80 bg-white/90 px-3 py-2 text-xs font-semibold shadow-sm backdrop-blur-md transition-all active:scale-95';
 const PILL_DARK =
   'inline-flex items-center gap-1.5 rounded-full border border-purple-500/25 bg-[#19132B]/90 px-3 py-2 text-xs font-semibold text-purple-100 shadow-sm backdrop-blur-md transition-all hover:border-[#D60E7B]/50 hover:text-white active:scale-95';
+
+const SEC_LIGHT =
+  'action-secondary-btn flex min-h-[48px] items-center justify-center gap-2 rounded-2xl border border-purple-200/90 bg-white px-3.5 py-2.5 text-xs font-bold text-[#362676] shadow-sm transition-all hover:border-[#7B1FA2]/50 hover:bg-purple-50/70 hover:-translate-y-0.5 active:scale-[0.98]';
+const SEC_DARK =
+  'action-secondary-btn flex min-h-[48px] items-center justify-center gap-2 rounded-2xl border border-purple-500/25 bg-[#19132B] px-3.5 py-2.5 text-xs font-bold text-purple-100 shadow-sm transition-all hover:border-[#D60E7B]/50 hover:bg-[#221A3A] active:scale-[0.98]';
 
 function updateTheme() {
   const dark = state.theme === 'dark';
@@ -147,6 +185,7 @@ function updateTheme() {
     el.btnPresent.className = PILL_DARK;
     el.themeIcon.innerHTML =
       '<svg class="h-3.5 w-3.5 text-amber-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>';
+    el.secBtns.forEach((b) => (b.className = SEC_DARK));
     el.card.className =
       'relative w-full max-w-[400px] overflow-hidden rounded-3xl border border-purple-500/25 bg-[#141022] shadow-card-dark transition-all duration-300';
     el.vinylBg.classList.remove('text-[#362676]', 'opacity-[0.045]');
@@ -174,6 +213,7 @@ function updateTheme() {
     el.btnPresent.className = PILL_LIGHT + ' text-[#362676] hover:border-[#D60E7B]/50 hover:bg-purple-50/70';
     el.themeIcon.innerHTML =
       '<svg class="h-3.5 w-3.5 text-[#7B1FA2]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/></svg>';
+    el.secBtns.forEach((b) => (b.className = SEC_LIGHT));
     el.card.className =
       'relative w-full max-w-[400px] overflow-hidden rounded-3xl border border-purple-100/90 bg-white shadow-card-light transition-all duration-300';
     el.vinylBg.classList.remove('text-purple-300', 'opacity-[0.09]');
@@ -196,6 +236,7 @@ function updateTheme() {
 function setPresent(on) {
   state.present = on;
   el.topToolbar.classList.toggle('hidden', on);
+  el.actionToolbar.classList.toggle('hidden', on);
   el.btnExit.classList.toggle('hidden', !on);
   el.btnExit.classList.toggle('inline-flex', on);
 }
@@ -225,3 +266,105 @@ el.stars.forEach((btn, idx) => {
 el.cta.href = REVIEW_URL;
 renderQr();
 updateTheme();
+
+// ---------- Acciones: WhatsApp, Descargar, Compartir, Copiar ----------
+async function copyText(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.top = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    const ok = document.execCommand('copy');
+    document.body.removeChild(ta);
+    return ok;
+  }
+}
+
+el.btnWhatsapp.addEventListener('click', () => {
+  const msg = T[state.lang].whatsappMessage(REVIEW_URL);
+  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank', 'noopener,noreferrer');
+});
+
+el.btnShare.addEventListener('click', async () => {
+  const t = T[state.lang];
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: t.shareTitle, text: t.shareText, url: REVIEW_URL });
+      return;
+    } catch (err) {
+      if (err && err.name === 'AbortError') return;
+    }
+  }
+  await copyText(REVIEW_URL);
+  showToast(t.toastCopied);
+});
+
+el.btnCopy.addEventListener('click', async () => {
+  await copyText(REVIEW_URL);
+  showToast(T[state.lang].toastCopied);
+});
+
+// Rasteriza el logo SVG (texto curvo) para que html2canvas lo dibuje bien
+function svgToCanvas(svg, size) {
+  return new Promise((resolve) => {
+    let str = new XMLSerializer().serializeToString(svg);
+    if (!str.includes('xmlns="http://www.w3.org/2000/svg"')) str = str.replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"');
+    const url = URL.createObjectURL(new Blob([str], { type: 'image/svg+xml;charset=utf-8' }));
+    const img = new Image();
+    img.onload = () => {
+      const c = document.createElement('canvas');
+      c.width = c.height = size;
+      c.getContext('2d').drawImage(img, 0, 0, size, size);
+      URL.revokeObjectURL(url);
+      resolve(c);
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      resolve(null);
+    };
+    img.src = url;
+  });
+}
+
+el.btnDownload.addEventListener('click', async () => {
+  const t = T[state.lang];
+  const svg = $('brand-svg-logo');
+  let tmp = null;
+  el.btnDownload.disabled = true;
+  el.downloadLabel.textContent = t.downloadingLabel;
+  try {
+    tmp = await svgToCanvas(svg, 480);
+    if (tmp) {
+      tmp.className = 'h-full w-full rounded-full';
+      svg.classList.add('hidden');
+      el.logoRing.appendChild(tmp);
+    }
+    // Solo imagen, textos, estrellas y QR: el bot?n CTA se excluye (data-export-ignore)
+    const canvas = await html2canvas(el.card, {
+      scale: 3,
+      backgroundColor: null,
+      logging: false,
+      ignoreElements: (node) => node.hasAttribute && node.hasAttribute('data-export-ignore'),
+    });
+    const a = document.createElement('a');
+    a.download = 'rueda-la-rola-review-card.png';
+    a.href = canvas.toDataURL('image/png');
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    showToast(t.toastDownloaded);
+  } catch (err) {
+    console.error(err);
+    showToast(t.toastDownloadError);
+  } finally {
+    if (tmp && tmp.parentNode) tmp.parentNode.removeChild(tmp);
+    svg.classList.remove('hidden');
+    el.btnDownload.disabled = false;
+    el.downloadLabel.textContent = T[state.lang].downloadLabel;
+  }
+});

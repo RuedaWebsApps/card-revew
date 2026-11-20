@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "html2canvas": "^1.4.1",
     "qr-code-styling": "^1.6.0-rc.1"
   },
   "devDependencies": {
